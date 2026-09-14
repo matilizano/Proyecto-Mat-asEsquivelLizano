@@ -217,3 +217,21 @@ where t.nombre = 'disponible'
             and tsrange (e.fecha_inicio, e.fecha_fin) &&
                 tsrange (d.fecha + d.hora_inicio, d.fecha + d.hora_fin)
     );
+
+
+-- Módulo de eventos recurrentes 
+
+create table series_eventos (
+    id_serie serial primary key,
+    patron varchar(20) not null,
+    intervalo int,
+    fecha_inicio date not null,
+    fecha_fin date not null, 
+    constraint check_patron_valido
+        check (patron in ('diario', 'semanal', 'mensual', 'personalizado'))
+    constraint check_fechas_serie
+        check (fecha_fin > fecha_inicio),
+    constraint check_intervalo_personalizado
+        check (patron <> 'personalizado' or intervalo is not null)
+);
+
