@@ -685,6 +685,67 @@ class AppAgenda(ctk.CTk):
             raise ValueError("La capacidad debe ser mayor a cero.")
         return nombre, direccion, ciudad, capacidad
 
+    def agregar_ubicacion(self):
+            try:
+                datos = self.datos_ubicacion_formulario()
+                self.ejecutar_consulta(
+                    "INSERT INTO ubicaciones (nombre, direccion, ciudad, capacidad) VALUES (%s, %s, %s, %s)",
+                    datos
+                )
+                self.limpiar_form_ubicacion(); self.actualizar_todas_las_tablas()
+                messagebox.showinfo("Éxito", "Ubicación creada correctamente.")
+            except Exception as e:
+                messagebox.showerror("No se pudo crear la ubicación", str(e))
+    
+    def actualizar_ubicacion(self):
+            uid = self.ubicacion_seleccionada_id()
+            if uid is None: return messagebox.showwarning("Selección requerida", "Selecciona una ubicación.")
+            try:
+                nombre, direccion, ciudad, capacidad = self.datos_ubicacion_formulario()
+                self.ejecutar_consulta(
+                    "UPDATE ubicaciones SET nombre=%s, direccion=%s, ciudad=%s, capacidad=%s WHERE id_ubicacion=%s",
+                    (nombre, direccion, ciudad, capacidad, uid)
+                )
+                self.actualizar_todas_las_tablas(); messagebox.showinfo("Éxito", "Ubicación actualizada.")
+            except Exception as e:
+                messagebox.showerror("No se pudo actualizar", str(e))
+    
+    def eliminar_ubicacion(self):
+            uid = self.ubicacion_seleccionada_id()
+            if uid is None: return messagebox.showwarning("Selección requerida", "Selecciona una ubicación.")
+            if not messagebox.askyesno("Confirmar", "¿Eliminar la ubicación seleccionada?"): return
+            try:
+                self.ejecutar_consulta("DELETE FROM ubicaciones WHERE id_ubicacion=%s", (uid,))
+                self.limpiar_form_ubicacion(); self.actualizar_todas_las_tablas()
+                messagebox.showinfo("Eliminado", "Ubicación eliminada.")
+            except Exception as e:
+                messagebox.showerror("No se pudo eliminar", "Verifica que no tenga eventos asociados.\n\n" + str(e))
+    
+    def cargar_datos_ubicaciones(self):
+            try:
+                rows = self.ejecutar_consulta(
+                    "SELECT id_ubicacion, nombre, direccion, ciudad, capacidad FROM ubicaciones ORDER BY nombre",
+                    fetch=True
+                )
+                for item in self.tree_ubicaciones.get_children(): self.tree_ubicaciones.delete(item)
+                self.ubicaciones_combo = {}
+                for row in rows:
+                    self.tree_ubicaciones.insert("", "end", values=row)
+                    etiqueta = f"{row[1]} — #{row[0]}"
+                    self.ubicaciones_combo[etiqueta] = row[0]
+    
+                ranking = self.ejecutar_consulta("""
+                    SELECT ubicacion, ciudad, capacidad, total_eventos, minutos_totales_reservados
+                    FROM vista_ranking_ocupacion_ubicaciones
+                """, fetch=True)
+                for item in self.tree_ranking_ubicaciones.get_children(): self.tree_ranking_ubicaciones.delete(item)
+                for row in ranking:
+                    minutos = int(row[4]) if row[4] is not None else 0
+                    self.tree_ranking_ubicaciones.insert("", "end", values=(row[0], row[1], row[2], row[3], minutos))
+            except Exception as e:
+                print(f"Error cargando ubicaciones: {e}")
+    
+
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
