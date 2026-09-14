@@ -194,7 +194,7 @@ alter table disponibilidades
     add constraint no_traslape_disponibildad
     exclude using gist (
         id_usuarios with =,
-        tsrange (hora_inicio, hora_fin) with &&
+        tsrange (fecha + hora_inicio, fecha + hora_fin) with &&   
     );
 
 create view vista_usuarios_libres as 
