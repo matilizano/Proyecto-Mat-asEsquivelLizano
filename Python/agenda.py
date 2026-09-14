@@ -650,7 +650,40 @@ class AppAgenda(ctk.CTk):
             ctk.CTkButton(form, text="🧹 Nueva / Limpiar", command=self.limpiar_form_ubicacion, fg_color="gray").pack(fill="x", padx=10, pady=5)
             ctk.CTkButton(form, text="🗑️ Eliminar seleccionada", command=self.eliminar_ubicacion, fg_color="#b33939", hover_color="#8f2d2d").pack(fill="x", padx=10, pady=5)
 
+    def ubicacion_seleccionada_id(self):
+        sel = self.tree_ubicaciones.selection()
+        return self.tree_ubicaciones.item(sel[0])["values"][0] if sel else None
 
+    def cargar_ubicacion_seleccionada(self, _=None):
+        sel = self.tree_ubicaciones.selection()
+        if not sel: return
+        vals = self.tree_ubicaciones.item(sel[0])["values"]
+        self.entry_ubi_nombre.delete(0, tk.END); self.entry_ubi_nombre.insert(0, vals[1])
+        self.entry_ubi_direccion.delete(0, tk.END); self.entry_ubi_direccion.insert(0, vals[2])
+        self.entry_ubi_ciudad.delete(0, tk.END); self.entry_ubi_ciudad.insert(0, vals[3])
+        self.entry_ubi_capacidad.delete(0, tk.END); self.entry_ubi_capacidad.insert(0, vals[4])
+
+    def limpiar_form_ubicacion(self):
+        self.tree_ubicaciones.selection_remove(self.tree_ubicaciones.selection())
+        self.entry_ubi_nombre.delete(0, tk.END)
+        self.entry_ubi_direccion.delete(0, tk.END)
+        self.entry_ubi_ciudad.delete(0, tk.END)
+        self.entry_ubi_capacidad.delete(0, tk.END)
+
+    def datos_ubicacion_formulario(self):
+        nombre = self.entry_ubi_nombre.get().strip()
+        direccion = self.entry_ubi_direccion.get().strip()
+        ciudad = self.entry_ubi_ciudad.get().strip()
+        capacidad_txt = self.entry_ubi_capacidad.get().strip()
+        if not nombre or not direccion or not ciudad or not capacidad_txt:
+            raise ValueError("Completa nombre, dirección, ciudad y capacidad.")
+        try:
+            capacidad = int(capacidad_txt)
+        except ValueError:
+            raise ValueError("La capacidad debe ser un número entero.")
+        if capacidad <= 0:
+            raise ValueError("La capacidad debe ser mayor a cero.")
+        return nombre, direccion, ciudad, capacidad
 
     # -------------------- REFRESCO GENERAL --------------------
 
