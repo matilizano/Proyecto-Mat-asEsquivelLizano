@@ -1245,7 +1245,36 @@ class AppAgenda(ctk.CTk):
             except ValueError:
                 pass
     
+    def limpiar_form_tarea(self):
+        self.tree_tareas.selection_remove(self.tree_tareas.selection())
+        self.combo_tarea_evento.set("Seleccione un evento")
+        self.combo_tarea_responsable.set("Seleccione un usuario")
+        self.entry_tarea_titulo.delete(0, tk.END)
+        self.entry_tarea_descripcion.delete(0, tk.END)
+        self.combo_tarea_prioridad.set("media")
+        self.combo_tarea_estado.set("pendiente")
+        self.establecer_fecha(self.fecha_tarea_limite, datetime.now())
+        self.entry_tarea_hora_limite.delete(0, tk.END); self.entry_tarea_hora_limite.insert(0, "18:00")
 
+    def datos_tarea_formulario(self):
+        evento = self.eventos_combo.get(self.combo_tarea_evento.get())
+        responsable = self.usuarios_combo.get(self.combo_tarea_responsable.get())
+        titulo = self.entry_tarea_titulo.get().strip()
+        descripcion = self.entry_tarea_descripcion.get().strip() or None
+        prioridad = self.combo_tarea_prioridad.get()
+        estado = self.combo_tarea_estado.get()
+        if evento is None or responsable is None or not titulo:
+            raise ValueError("Completa evento, responsable y título.")
+        fecha_limite = None
+        hora_txt = self.entry_tarea_hora_limite.get().strip()
+        if hora_txt:
+            try:
+                fecha_limite = datetime.strptime(
+                    f"{self.obtener_fecha(self.fecha_tarea_limite)} {hora_txt}", "%Y-%m-%d %H:%M"
+                )
+            except ValueError:
+                raise ValueError("La hora límite debe tener formato HH:MM.")
+        return evento, responsable, titulo, descripcion, prioridad, estado, fecha_limite
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
