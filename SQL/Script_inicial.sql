@@ -313,4 +313,3 @@ from usuarios u
 left join tareas t on t.id_usuario_responsable = u.id_usuario
 group by u.id_usuario, u.nombre, u.apellido
 order by tareas_vencidas desc, tareas_activas desc;
-

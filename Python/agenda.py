@@ -599,6 +599,59 @@ class AppAgenda(ctk.CTk):
         except Exception as e:
             print(f"Error cargando eventos: {e}")
 
+# Creación del GUI de ubicaciones (Módulo 1)
+
+    def configurar_pestana_ubicaciones(self):
+            self.crear_encabezado(self.tab_ubicaciones, "Ubicaciones",
+                                   "Administra salas, auditorios y espacios físicos usados por los eventos.")
+    
+            cuerpo = ctk.CTkFrame(self.tab_ubicaciones, fg_color="transparent")
+            cuerpo.pack(fill="both", expand=True, padx=10, pady=5)
+            cuerpo.grid_columnconfigure(0, weight=3); cuerpo.grid_columnconfigure(1, weight=1); cuerpo.grid_rowconfigure(0, weight=1)
+    
+            panel_izq = ctk.CTkFrame(cuerpo, fg_color="transparent")
+            panel_izq.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+            panel_izq.grid_rowconfigure(0, weight=1)
+            panel_izq.grid_rowconfigure(1, weight=1)
+            panel_izq.grid_columnconfigure(0, weight=1)
+    
+            tabla_frame = ctk.CTkFrame(panel_izq)
+            tabla_frame.grid(row=0, column=0, sticky="nsew")
+            self.tree_ubicaciones = self.crear_treeview(
+                tabla_frame, ("ID", "Nombre", "Dirección", "Ciudad", "Capacidad"),
+                (60, 160, 220, 120, 90)
+            )
+            self.tree_ubicaciones.bind("<<TreeviewSelect>>", self.cargar_ubicacion_seleccionada)
+    
+            reporte_frame = ctk.CTkFrame(panel_izq)
+            reporte_frame.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
+            ctk.CTkLabel(reporte_frame, text="📊 Ranking de ocupación (vista_ranking_ocupacion_ubicaciones)",
+                         font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=15, pady=(10, 0))
+            self.tree_ranking_ubicaciones = self.crear_treeview(
+                reporte_frame, ("Ubicación", "Ciudad", "Capacidad", "Eventos", "Min. reservados"),
+                (150, 110, 90, 80, 130)
+            )
+    
+            form = ctk.CTkScrollableFrame(cuerpo, width=300)
+            form.grid(row=0, column=1, sticky="nsew")
+    
+            ctk.CTkLabel(form, text="Formulario de ubicación", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 15))
+            self.entry_ubi_nombre = ctk.CTkEntry(form, placeholder_text="Nombre (ej. Sala A)")
+            self.entry_ubi_nombre.pack(fill="x", padx=10, pady=6)
+            self.entry_ubi_direccion = ctk.CTkEntry(form, placeholder_text="Dirección")
+            self.entry_ubi_direccion.pack(fill="x", padx=10, pady=6)
+            self.entry_ubi_ciudad = ctk.CTkEntry(form, placeholder_text="Ciudad")
+            self.entry_ubi_ciudad.pack(fill="x", padx=10, pady=6)
+            self.entry_ubi_capacidad = ctk.CTkEntry(form, placeholder_text="Capacidad (número entero)")
+            self.entry_ubi_capacidad.pack(fill="x", padx=10, pady=6)
+    
+            ctk.CTkButton(form, text="➕ Crear ubicación", command=self.agregar_ubicacion).pack(fill="x", padx=10, pady=(15, 5))
+            ctk.CTkButton(form, text="💾 Actualizar seleccionada", command=self.actualizar_ubicacion).pack(fill="x", padx=10, pady=5)
+            ctk.CTkButton(form, text="🧹 Nueva / Limpiar", command=self.limpiar_form_ubicacion, fg_color="gray").pack(fill="x", padx=10, pady=5)
+            ctk.CTkButton(form, text="🗑️ Eliminar seleccionada", command=self.eliminar_ubicacion, fg_color="#b33939", hover_color="#8f2d2d").pack(fill="x", padx=10, pady=5)
+
+
+
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
