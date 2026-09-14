@@ -177,11 +177,11 @@ insert into tipo_disponibilidad (nombre) values
 
 create table disponibilidades (
     id_disponibilidad serial primary key,
-    id_usuarios int not null references usuarios(id_usuarios),
+    id_usuarios int not null references usuarios(id_usuario),
     id_tipo int not null references tipo_disponibilidad(id_tipo),
     fecha date not null, 
-    hora_inicio timestamptz not null,
-    hora_fin timestamptz not null,
+    hora_inicio time not null,
+    hora_fin time not null,
     constraint check_hora_fin check (hora_fin > hora_inicio)
 -- esto hace no se se puedan guardar franjas donde ya existen 
 ); 
@@ -206,7 +206,7 @@ select
     d.hora_inicio,
     d.hora_fin
 from usuarios u
-join disponibilidades d on d.id_usuario = u.id_usuario
+join disponibilidades d on d.id_usuarios = u.id_usuario
 join tipo_disponibilidad t on t.id_tipo = d.id_tipo
 where t.nombre = 'disponible'
     and not exists (
