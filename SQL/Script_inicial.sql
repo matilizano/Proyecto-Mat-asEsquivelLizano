@@ -124,7 +124,7 @@ create index idx_eventos_ubicacion on eventos (id_ubicacion);
 create index idx_eventos_fecha on eventos (id_ubicacion, fecha_inicio, fecha_fin);
 
 -- prevención de eventos que pasan a la misma vez (traslapes)
-create extension if not existis btree_gist;
+create extension if not exists btree_gist;
 
 alter table eventos 
     add constraint no_traslape_ubicacion
@@ -177,11 +177,11 @@ insert into tipo_disponibilidad (nombre) values
 
 create table disponibilidades (
     id_disponibilidad serial primary key,
-    id_usuarios int not null references usuarios(id_usuario),
+    id_usuarios int not null references usuarios(id_usuarios),
     id_tipo int not null references tipo_disponibilidad(id_tipo),
     fecha date not null, 
-    hora_inicio time not null,
-    hora_fin time not null,
+    hora_inicio timestamptz not null,
+    hora_fin timestamptz not null,
     constraint check_hora_fin check (hora_fin > hora_inicio)
 -- esto hace no se se puedan guardar franjas donde ya existen 
 ); 
@@ -207,7 +207,7 @@ select
     d.hora_fin
 from usuarios u
 join disponibilidades d on d.id_usuario = u.id_usuario
-join tipos_disponibilidad t on t.id_tipo = d.id_tipo
+join tipo_disponibilidad t on t.id_tipo = d.id_tipo
 where t.nombre = 'disponible'
     and not exists (
         select 1 
@@ -228,7 +228,7 @@ create table series_eventos (
     fecha_inicio date not null,
     fecha_fin date not null, 
     constraint check_patron_valido
-        check (patron in ('diario', 'semanal', 'mensual', 'personalizado'))
+        check (patron in ('diario', 'semanal', 'mensual', 'personalizado')),
     constraint check_fechas_serie
         check (fecha_fin > fecha_inicio),
     constraint check_intervalo_personalizado
@@ -279,7 +279,7 @@ select
     u.apellido,
     count(*) filter(where t.estado = 'pendiente') as tareas_pendientes,
     count(*) filter(where t.estado = 'en progreso') as tareas_en_progreso,
-    count(*) filter(where t.estado in ("pendiente", "en progreso")) as tarea_activas
+    count(*) filter(where t.estado in ('pendiente', 'en progreso')) as tarea_activas
 from usuarios u
 left join tareas t on t.id_usuario_responsable = u.id_usuario
 group by u.id_usuario, u.nombre, u.apellido;
@@ -303,10 +303,10 @@ select
     u.nombre,
     u.apellido,
     count(*) filter (
-        where t.estado in ("pendiente", "en progreso")
+        where t.estado in ('pendiente', 'en progreso')
     ) as tareas_activas,
     count(*) filter (
-        where t.estado in ("pendiente", "en progreso")
+        where t.estado in ('pendiente', 'en progreso')
             and t.fecha_limite < current_timestamp
     ) as tareas_vencidas
 from usuarios u
