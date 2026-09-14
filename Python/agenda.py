@@ -869,7 +869,38 @@ class AppAgenda(ctk.CTk):
         except Exception as e:
             messagebox.showerror("No se pudo eliminar", str(e))
 
-
+     def cargar_datos_disponibilidad(self):
+        try:
+            tipos = self.ejecutar_consulta("SELECT id_tipo, nombre FROM tipo_disponibilidad ORDER BY id_tipo", fetch=True)
+            self.tipos_disponibilidad_combo = {nombre: tid for tid, nombre in tipos}
+    
+            rows = self.ejecutar_consulta("""
+                SELECT d.id_disponibilidad, u.nombre, u.apellido, t.nombre,
+                        d.fecha, d.hora_inicio, d.hora_fin
+                FROM disponibilidades d
+                JOIN usuarios u ON u.id_usuario = d.id_usuarios
+                JOIN tipo_disponibilidad t ON t.id_tipo = d.id_tipo
+                ORDER BY d.fecha DESC, d.hora_inicio
+            """, fetch=True)
+            for item in self.tree_disponibilidad.get_children(): self.tree_disponibilidad.delete(item)
+            for row in rows:
+                usuario = f"{row[1]} {row[2]}"
+                self.tree_disponibilidad.insert("", "end", values=(row[0], usuario, row[3], row[4], row[5], row[6]))
+    
+            libres = self.ejecutar_consulta("""
+                SELECT nombre, apellido, fecha, hora_inicio, hora_fin
+                FROM vista_usuarios_libres
+                ORDER BY fecha DESC, hora_inicio
+            """, fetch=True)
+            for item in self.tree_usuarios_libres.get_children(): self.tree_usuarios_libres.delete(item)
+            for row in libres:
+                usuario = f"{row[0]} {row[1]}"
+                self.tree_usuarios_libres.insert("", "end", values=(usuario, row[2], row[3], row[4]))
+    
+            valores_u = ["Seleccione un usuario"] + list(self.usuarios_combo.keys())
+            self.combo_disp_usuario.configure(values=valores_u)
+        except Exception as e:
+            print(f"Error cargando disponibilidad: {e}")
 
     
 
