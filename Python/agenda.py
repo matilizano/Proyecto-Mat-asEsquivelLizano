@@ -1011,6 +1011,41 @@ class AppAgenda(ctk.CTk):
         self.establecer_fecha(self.fecha_serie_fin, hoy)
         self.entry_serie_hora_inicio.delete(0, tk.END); self.entry_serie_hora_inicio.insert(0, "09:00")
         self.entry_serie_hora_fin.delete(0, tk.END); self.entry_serie_hora_fin.insert(0, "10:00")
+
+
+    @staticmethod
+    def _sumar_un_mes(fecha):
+        mes = fecha.month + 1
+        anio = fecha.year + (mes - 1) // 12
+        mes = ((mes - 1) % 12) + 1
+        dia = min(fecha.day, calendar.monthrange(anio, mes)[1])
+        return fecha.replace(year=anio, month=mes, day=dia)
+
+    def _generar_fechas_serie(self, patron, intervalo, fecha_inicio, fecha_fin):
+        fechas = []
+        actual = fecha_inicio
+        while actual <= fecha_fin:
+            fechas.append(actual)
+            if patron == "diario":
+                actual = actual + timedelta(days=1)
+            elif patron == "semanal":
+                actual = actual + timedelta(days=7)
+            elif patron == "personalizado":
+                actual = actual + timedelta(days=intervalo)
+            elif patron == "mensual":
+                actual = self._sumar_un_mes(actual)
+            else:
+                break
+        return fechas    
+
+    
+
+    
+
+
+    
+    
+
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
