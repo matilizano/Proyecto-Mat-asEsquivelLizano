@@ -197,3 +197,23 @@ alter table disponibilidades
         tsrange (hora_inicio, hora_fin) with &&
     );
 
+create view vista_usuarios_libres as 
+select 
+    u.id_usuario,
+    u.nombre,
+    u.apellido,
+    d.fecha,
+    d.hora_inicio,
+    d.hora_fin
+from usuarios u
+join disponibilidades d on d.id_usuario = u.id_usuario
+join tipos_disponibilidad t on t.id_tipo = d.id_tipo
+where t.nombre = 'disponible'
+    and not exists (
+        select 1 
+        from eventos e
+        left join participaciones p on p.id_evento = e.id_evento
+        where (e.id_usuario_propietario = u.id_usuario or p.id_invitado = u.id_usuario)
+            and tsrange (e.fecha_inicio, e.fecha_fin) &&
+                tsrange (d.fecha + d.hora_inicio, d.fecha + d.hora_fin)
+    );
