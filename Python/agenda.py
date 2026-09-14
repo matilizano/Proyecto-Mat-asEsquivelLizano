@@ -832,6 +832,40 @@ class AppAgenda(ctk.CTk):
         self.establecer_fecha(self.fecha_disponibilidad, datetime.now())
         self.entry_disp_hora_inicio.delete(0, tk.END); self.entry_disp_hora_inicio.insert(0, "09:00")
         self.entry_disp_hora_fin.delete(0, tk.END); self.entry_disp_hora_fin.insert(0, "11:00")
+
+    def agregar_disponibilidad(self):
+            usuario = self.usuarios_combo.get(self.combo_disp_usuario.get())
+            tipo = self.tipos_disponibilidad_combo.get(self.combo_disp_tipo.get())
+            fecha = self.obtener_fecha(self.fecha_disponibilidad)
+            hora_inicio = self.entry_disp_hora_inicio.get().strip()
+            hora_fin = self.entry_disp_hora_fin.get().strip()
+            if usuario is None or tipo is None:
+                return messagebox.showwarning("Campos incompletos", "Selecciona un usuario y un tipo válidos.")
+            try:
+                datetime.strptime(hora_inicio, "%H:%M"); datetime.strptime(hora_fin, "%H:%M")
+            except ValueError:
+                return messagebox.showwarning("Formato inválido", "Las horas deben tener formato HH:MM.")
+            if hora_fin <= hora_inicio:
+                return messagebox.showwarning("Rango inválido", "La hora de fin debe ser posterior a la de inicio.")
+            try:
+                self.ejecutar_consulta("""
+                    INSERT INTO disponibilidades (id_usuarios, id_tipo, fecha, hora_inicio, hora_fin)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (usuario, tipo, fecha, hora_inicio, hora_fin))
+                self.limpiar_form_disponibilidad(); self.cargar_datos_disponibilidad()
+                messagebox.showinfo("Éxito", "Franja de disponibilidad registrada.")
+            except Exception as e:
+                messagebox.showerror("No se pudo registrar",
+                                      "Verifica que no se traslape con otra franja del mismo usuario.\n\n" + str(e))
+
+
+
+
+
+    
+
+    
+
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
