@@ -1223,7 +1223,27 @@ class AppAgenda(ctk.CTk):
 
         self.limpiar_form_tarea()
 
- 
+    def tarea_seleccionada_id(self):
+        sel = self.tree_tareas.selection()
+        return self.tree_tareas.item(sel[0])["values"][0] if sel else None
+
+    def cargar_tarea_seleccionada(self, _=None):
+        sel = self.tree_tareas.selection()
+        if not sel: return
+        vals = self.tree_tareas.item(sel[0])["values"]
+        self.combo_tarea_evento.set(vals[1])
+        self.combo_tarea_responsable.set(vals[2])
+        self.entry_tarea_titulo.delete(0, tk.END); self.entry_tarea_titulo.insert(0, vals[3])
+        self.combo_tarea_prioridad.set(vals[4] if vals[4] else "media")
+        self.combo_tarea_estado.set(vals[5])
+        fecha_limite = vals[6]
+        if fecha_limite and fecha_limite != "—":
+            try:
+                dt = datetime.strptime(str(fecha_limite), "%Y-%m-%d %H:%M")
+                self.establecer_fecha(self.fecha_tarea_limite, dt)
+                self.entry_tarea_hora_limite.delete(0, tk.END); self.entry_tarea_hora_limite.insert(0, dt.strftime("%H:%M"))
+            except ValueError:
+                pass
     
 
     # -------------------- REFRESCO GENERAL --------------------
