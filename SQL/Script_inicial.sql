@@ -172,3 +172,28 @@ insert into tipo_disponibilidad (nombre) values
     ('disponible'),
     ('ocupado'),
     ('no disponible');
+
+--la tabla de disponibilidad de usuarios para que se registre las franjas de tiempo en las que un usiario está libre 
+
+create table disponibilidades (
+    id_disponibilidad serial primary key,
+    id_usuarios int not null references usuarios(id_usuario),
+    id_tipo int not null references tipo_disponibilidad(id_tipo),
+    fecha date not null, 
+    hora_inicio time not null,
+    hora_fin time not null,
+    constraint check_hora_fin check (hora_fin > hora_inicio)
+-- esto hace no se se puedan guardar franjas donde ya existen 
+); 
+
+create index idx_disponibilidades_usuario on disponibilidades (id_usuarios, fecha, hora_inicio, hora_fin);
+create index idx_disponibilidades_usuario_rango on disponibilidades (id_usuarios, fecha, hora_inicio,hora_fin);
+-- prevención de translapes dentro las franjas
+create extension if not exists btree_gist;
+alter table disponibilidades 
+    add constraint no_traslape_disponibildad
+    exclude using gist (
+        id_usuarios with =,
+        tsrange (hora_inicio, hora_fin) with &&
+    );
+
