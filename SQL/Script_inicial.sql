@@ -252,3 +252,20 @@ select
 from series_eventos s
 join eventos e on e.id_serie = s.id_serie
 order by s.id_serie, e.fecha_inicio;
+
+
+--Creación del modulo de tareas asociadas a eventos
+
+create table tareas (
+    id_tarea serial primary key,
+    id evento int not null references eventos(id_evento),
+    id_usuario_responsable int not null references usuarios(id_usuario),
+    titulo varchar (100) not null,
+    descripcion text,
+    prioridad varchar (20),
+    estado varchar (20) default 'pendiente',
+    fecha_limite timestamp,
+    constraint check_estado_tarea
+        check (estado in ('pendiente', 'en progreso', 'completada', 'cancelada'))
+);
+
