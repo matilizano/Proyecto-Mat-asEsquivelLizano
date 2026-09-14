@@ -104,4 +104,31 @@ BEFORE INSERT OR UPDATE ON categorias
 FOR EACH ROW EXECUTE FUNCTION evitar_ciclo_categorias();
 
 
+-- creación del módulo de gestión de ubicaciones (RF08, RE06, RN06)
 
+--ENTIDAD UBICACIÓN (LA TABLA UBICACIONES)
+create table ubicaciones ( 
+    id_ubicacion serial primary key,
+    nombre varchar(100) not null,
+    dirección varchar(150) not null,
+    cuidad varchar(30) not null,
+    capacidad int not null check (capacidad > 0)
+); 
+
+-- relación entre EVENTOS y UBICACIONES
+alter table eventos 
+    add column id_ubicacion int not null references ubicaciones(id_ubiacion); 
+
+-- índices para consultar por las ubicaciones y las fechas 
+create index idx_eventos_ubicacion on eventos (id_ubicacion);
+create index idx_eventos_fecha on eventos (id_ubicacion, fecha_inicio, fecha_fin);
+
+-- prevención de eventos que pasan a la misma vez (traslapes)
+create extension if not existis btree_gist;
+
+alter table eventos 
+    add constraint no_traslape_ubicacion
+    exclude using gist (
+        id_ubicacion with =,
+        tsrange (fecha_inicio, fecha_fin) with &&
+    );
