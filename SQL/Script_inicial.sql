@@ -132,3 +132,17 @@ alter table eventos
         id_ubicacion with =,
         tsrange (fecha_inicio, fecha_fin) with &&
     );
+
+-- historial de eventos por ubicación para tener en la agenda. 
+create view vista_agenda_ubicaciones as 
+select 
+    u.id_ubicacion,
+    u.nombre as ubicacion, 
+    e.id_evento,
+    e.titulo,
+    e.fecha_inicio, 
+    e.fecha_fin
+from ubicaciones u
+join eventos e on e.id_ubicacion = u.id_ubicacion
+order by u.id_ubicacion, e.fecha_inicio;
+
