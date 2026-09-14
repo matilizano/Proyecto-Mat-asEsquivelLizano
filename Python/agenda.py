@@ -824,6 +824,14 @@ class AppAgenda(ctk.CTk):
             self.establecer_fecha(self.fecha_disponibilidad, str(vals[3]))
             self.entry_disp_hora_inicio.delete(0, tk.END); self.entry_disp_hora_inicio.insert(0, str(vals[4]))
             self.entry_disp_hora_fin.delete(0, tk.END); self.entry_disp_hora_fin.insert(0, str(vals[5]))
+
+    def limpiar_form_disponibilidad(self):
+        self.tree_disponibilidad.selection_remove(self.tree_disponibilidad.selection())
+        self.combo_disp_usuario.set("Seleccione un usuario")
+        self.combo_disp_tipo.set("disponible")
+        self.establecer_fecha(self.fecha_disponibilidad, datetime.now())
+        self.entry_disp_hora_inicio.delete(0, tk.END); self.entry_disp_hora_inicio.insert(0, "09:00")
+        self.entry_disp_hora_fin.delete(0, tk.END); self.entry_disp_hora_fin.insert(0, "11:00")
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
