@@ -258,7 +258,7 @@ order by s.id_serie, e.fecha_inicio;
 
 create table tareas (
     id_tarea serial primary key,
-    id evento int not null references eventos(id_evento),
+    id_evento int not null references eventos(id_evento),
     id_usuario_responsable int not null references usuarios(id_usuario),
     titulo varchar (100) not null,
     descripcion text,
@@ -268,4 +268,49 @@ create table tareas (
     constraint check_estado_tarea
         check (estado in ('pendiente', 'en progreso', 'completada', 'cancelada'))
 );
+
+create index idx_tareas_evento on tareas (id_evento);
+create index idx_tareas_responsable on tareas (id_usuario_responsable, estado);
+
+create view vista_carga_trabajo_usuario as 
+select 
+    u.id_usuario, 
+    u.nombre,
+    u.apellido,
+    count(*) filter(where t.estado = 'pendiente') as tareas_pendientes,
+    count(*) filter(where t.estado = 'en progreso') as tareas_en_progreso,
+    count(*) filter(where t.estado in ("pendiente", "en progreso")) as tarea_activas
+from usuarios u
+left join tareas t on t.id_usuario_responsable = u.id_usuario
+group by u.id_usuario, u.nombre, u.apellido;
+
+
+create view vista_eventos_con_tareas_vencidad as 
+select
+    e.id_evento,
+    e.titulo as evento, 
+    count(*) as tareas_vencidas
+from eventos e
+join tareas t on t.id_evento = e.id_evento
+where t.fecha_limite < current_timestamp
+    and t.estado not in ('completada', 'cancelada')
+group by e.id_evento, e.titulo
+order by tareas_vencidas desc;
+
+create view vista_reporte_productividad as 
+select 
+    u.id_usuario,
+    u.nombre,
+    u.apellido,
+    count(*) filter (
+        where t.estado in ("pendiente", "en progreso")
+    ) as tareas_activas,
+    count(*) filter (
+        where t.estado in ("pendiente", "en progreso")
+            and t.fecha_limite < current_timestamp
+    ) as tareas_vencidas
+from usuarios u
+left join tareas t on t.id_usuario_responsable = u.id_usuario
+group by u.id_usuario, u.nombre, u.apellido
+order by tareas_vencidas desc, tareas_activas desc;
 
