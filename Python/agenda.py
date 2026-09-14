@@ -869,7 +869,7 @@ class AppAgenda(ctk.CTk):
         except Exception as e:
             messagebox.showerror("No se pudo eliminar", str(e))
 
-     def cargar_datos_disponibilidad(self):
+    def cargar_datos_disponibilidad(self):
         try:
             tipos = self.ejecutar_consulta("SELECT id_tipo, nombre FROM tipo_disponibilidad ORDER BY id_tipo", fetch=True)
             self.tipos_disponibilidad_combo = {nombre: tid for tid, nombre in tipos}
@@ -949,7 +949,7 @@ class AppAgenda(ctk.CTk):
         self.combo_serie_usuario.set("Seleccione un usuario")
         self.combo_serie_usuario.pack(fill="x", padx=10, pady=4)
     
-         ctk.CTkLabel(form, text="Categoría").pack(anchor="w", padx=10, pady=(6, 2))
+        ctk.CTkLabel(form, text="Categoría").pack(anchor="w", padx=10, pady=(6, 2))
         self.combo_serie_categoria = ctk.CTkComboBox(form, values=["Seleccione una categoría"], state="readonly")
         self.combo_serie_categoria.set("Seleccione una categoría")
         self.combo_serie_categoria.pack(fill="x", padx=10, pady=4)
@@ -1352,6 +1352,10 @@ class AppAgenda(ctk.CTk):
         self.cargar_datos_usuarios()
         self.cargar_datos_categorias()
         self.cargar_datos_eventos()
+        self.cargar_datos_disponibilidad()
+        self.cargar_datos_series()
+        self.cargar_datos_tareas()
+        self.cargar_datos_ubicaciones()
 
 
 if __name__ == "__main__":
