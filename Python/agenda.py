@@ -1145,10 +1145,85 @@ class AppAgenda(ctk.CTk):
             print(f"Error cargando ocurrencias: {e}")
  
 
-    
+# Gui para el último módulo de tareas asociadas a eventos (Módulo 4)
 
+    def configurar_pestana_tareas(self):
+        self.crear_encabezado(self.tab_tareas, "Tareas",
+                               "Gestiona subtareas de cada evento, con responsable, prioridad y plazo.")
 
-    
+        cuerpo = ctk.CTkFrame(self.tab_tareas, fg_color="transparent")
+        cuerpo.pack(fill="both", expand=True, padx=10, pady=5)
+        cuerpo.grid_columnconfigure(0, weight=3); cuerpo.grid_columnconfigure(1, weight=1); cuerpo.grid_rowconfigure(0, weight=1)
+
+        panel_izq = ctk.CTkFrame(cuerpo, fg_color="transparent")
+        panel_izq.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+        panel_izq.grid_rowconfigure(0, weight=2)
+        panel_izq.grid_rowconfigure(1, weight=1)
+        panel_izq.grid_columnconfigure(0, weight=1)
+
+        tabla_frame = ctk.CTkFrame(panel_izq)
+        tabla_frame.grid(row=0, column=0, sticky="nsew")
+        self.tree_tareas = self.crear_treeview(
+            tabla_frame, ("ID", "Evento", "Responsable", "Título", "Prioridad", "Estado", "Fecha límite"),
+            (60, 160, 140, 170, 90, 100, 140)
+        )
+        self.tree_tareas.bind("<<TreeviewSelect>>", self.cargar_tarea_seleccionada)
+
+        reporte_frame = ctk.CTkFrame(panel_izq)
+        reporte_frame.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
+        ctk.CTkLabel(reporte_frame, text="📈 Reporte de productividad (vista_reporte_productividad)",
+                     font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=15, pady=(10, 0))
+        self.tree_productividad = self.crear_treeview(
+            reporte_frame, ("Usuario", "Tareas activas", "Tareas vencidas"),
+            (220, 120, 120)
+        )
+
+        form = ctk.CTkScrollableFrame(cuerpo, width=310)
+        form.grid(row=0, column=1, sticky="nsew")
+
+        ctk.CTkLabel(form, text="Formulario de tarea", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 15))
+
+        ctk.CTkLabel(form, text="Evento").pack(anchor="w", padx=10, pady=(2, 2))
+        self.combo_tarea_evento = ctk.CTkComboBox(form, values=["Seleccione un evento"], state="readonly")
+        self.combo_tarea_evento.set("Seleccione un evento")
+        self.combo_tarea_evento.pack(fill="x", padx=10, pady=4)
+
+        ctk.CTkLabel(form, text="Responsable").pack(anchor="w", padx=10, pady=(8, 2))
+        self.combo_tarea_responsable = ctk.CTkComboBox(form, values=["Seleccione un usuario"], state="readonly")
+        self.combo_tarea_responsable.set("Seleccione un usuario")
+        self.combo_tarea_responsable.pack(fill="x", padx=10, pady=4)
+
+        self.entry_tarea_titulo = ctk.CTkEntry(form, placeholder_text="Título de la tarea")
+        self.entry_tarea_titulo.pack(fill="x", padx=10, pady=(10, 6))
+        self.entry_tarea_descripcion = ctk.CTkEntry(form, placeholder_text="Descripción (opcional)")
+        self.entry_tarea_descripcion.pack(fill="x", padx=10, pady=6)
+
+        ctk.CTkLabel(form, text="Prioridad").pack(anchor="w", padx=10, pady=(8, 2))
+        self.combo_tarea_prioridad = ctk.CTkComboBox(form, values=["baja", "media", "alta"], state="readonly")
+        self.combo_tarea_prioridad.set("media")
+        self.combo_tarea_prioridad.pack(fill="x", padx=10, pady=4)
+
+        ctk.CTkLabel(form, text="Estado").pack(anchor="w", padx=10, pady=(8, 2))
+        self.combo_tarea_estado = ctk.CTkComboBox(
+            form, values=["pendiente", "en progreso", "completada", "cancelada"], state="readonly"
+        )
+        self.combo_tarea_estado.set("pendiente")
+        self.combo_tarea_estado.pack(fill="x", padx=10, pady=4)
+
+        ctk.CTkLabel(form, text="Fecha límite").pack(anchor="w", padx=10, pady=(8, 2))
+        self.fecha_tarea_limite = self.crear_selector_fecha(form)
+        self.fecha_tarea_limite.pack(fill="x", padx=10, pady=4)
+        self.entry_tarea_hora_limite = ctk.CTkEntry(form, placeholder_text="HH:MM")
+        self.entry_tarea_hora_limite.pack(fill="x", padx=10, pady=4)
+
+        ctk.CTkButton(form, text="➕ Crear tarea", command=self.agregar_tarea).pack(fill="x", padx=10, pady=(16, 5))
+        ctk.CTkButton(form, text="💾 Actualizar seleccionada", command=self.actualizar_tarea).pack(fill="x", padx=10, pady=5)
+        ctk.CTkButton(form, text="🧹 Nueva / Limpiar", command=self.limpiar_form_tarea, fg_color="gray").pack(fill="x", padx=10, pady=5)
+        ctk.CTkButton(form, text="🗑️ Eliminar seleccionada", command=self.eliminar_tarea, fg_color="#b33939", hover_color="#8f2d2d").pack(fill="x", padx=10, pady=5)
+
+        self.limpiar_form_tarea()
+
+ 
     
 
     # -------------------- REFRESCO GENERAL --------------------
