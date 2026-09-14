@@ -998,6 +998,19 @@ class AppAgenda(ctk.CTk):
     def _al_cambiar_patron_serie(self, _valor=None):
         pass  # el intervalo solo aplica cuando el patrón es 'personalizado'; se valida al generar
 
+
+    def limpiar_form_serie(self):
+        self.entry_serie_titulo.delete(0, tk.END)
+        self.combo_serie_usuario.set("Seleccione un usuario")
+        self.combo_serie_categoria.set("Seleccione una categoría")
+        self.combo_serie_ubicacion.set("Seleccione una ubicación")
+        self.combo_serie_patron.set("semanal")
+        self.entry_serie_intervalo.delete(0, tk.END)
+        hoy = datetime.now()
+        self.establecer_fecha(self.fecha_serie_inicio, hoy)
+        self.establecer_fecha(self.fecha_serie_fin, hoy)
+        self.entry_serie_hora_inicio.delete(0, tk.END); self.entry_serie_hora_inicio.insert(0, "09:00")
+        self.entry_serie_hora_fin.delete(0, tk.END); self.entry_serie_hora_fin.insert(0, "10:00")
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
