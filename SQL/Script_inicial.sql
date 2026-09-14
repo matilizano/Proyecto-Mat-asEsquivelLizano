@@ -159,3 +159,16 @@ from ubicaciones u
 left join eventos e on e.id_ubicacion = u.id_ubicacion
 group by u.id_ubicacion, u.nombre, u.ciudad, u.capacidad
 order by total_eventos desc, minutos_totales_reservados desc; 
+
+
+-- Módulo de disponibilidad de usuarios y gestión de tiempos
+-- primero es la creación del catálogo que nos dice los posibles estados que puede tener una horas (disponible, ocupado, no disponible)
+create table tipo_disponibilidad (
+    id_tipo serial primary key,
+    nombre varchar(20) not null unique -- Aqui es UNIQUE para que no se meta el mismo dos veces
+);
+
+insert into tipo_disponibilidad (nombre) values
+    ('disponible'),
+    ('ocupado'),
+    ('no disponible');
