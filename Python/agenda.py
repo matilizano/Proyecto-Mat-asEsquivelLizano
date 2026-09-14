@@ -995,7 +995,8 @@ class AppAgenda(ctk.CTk):
     
         self.limpiar_form_serie()
 
-    
+    def _al_cambiar_patron_serie(self, _valor=None):
+        pass  # el intervalo solo aplica cuando el patrón es 'personalizado'; se valida al generar
 
     # -------------------- REFRESCO GENERAL --------------------
 
