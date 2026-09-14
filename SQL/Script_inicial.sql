@@ -153,9 +153,9 @@ select
     u.nombre as ubicacion,
     u.ciudad,
     u.capacidad,
-    count(e.id_evento) as total_eventos,
+    count(e.id_evento) as total_eventos, 
     coalesce(sum(extract(epoch from (e.fecha_fin - e.fecha_inicio)) /60), 0) as minutos_totales_reservados
 from ubicaciones u
 left join eventos e on e.id_ubicacion = u.id_ubicacion
 group by u.id_ubicacion, u.nombre, u.ciudad, u.capacidad
-order by total_eventos desc, minutos_totales_resevados desc; 
+order by total_eventos desc, minutos_totales_reservados desc; 
