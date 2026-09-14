@@ -744,7 +744,76 @@ class AppAgenda(ctk.CTk):
                     self.tree_ranking_ubicaciones.insert("", "end", values=(row[0], row[1], row[2], row[3], minutos))
             except Exception as e:
                 print(f"Error cargando ubicaciones: {e}")
+
+
+# Creación del GUI del modulo de disponibilidad (Módulo 2)
+    def configurar_pestana_disponibilidad(self):
+            self.crear_encabezado(self.tab_disponibilidad, "Disponibilidad",
+                                   "Registra las franjas horarias de cada usuario y consulta quién está libre.")
     
+            cuerpo = ctk.CTkFrame(self.tab_disponibilidad, fg_color="transparent")
+            cuerpo.pack(fill="both", expand=True, padx=10, pady=5)
+            cuerpo.grid_columnconfigure(0, weight=3); cuerpo.grid_columnconfigure(1, weight=1); cuerpo.grid_rowconfigure(0, weight=1)
+    
+            panel_izq = ctk.CTkFrame(cuerpo, fg_color="transparent")
+            panel_izq.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+            panel_izq.grid_rowconfigure(0, weight=1)
+            panel_izq.grid_rowconfigure(1, weight=1)
+            panel_izq.grid_columnconfigure(0, weight=1)
+    
+            tabla_frame = ctk.CTkFrame(panel_izq)
+            tabla_frame.grid(row=0, column=0, sticky="nsew")
+            self.tree_disponibilidad = self.crear_treeview(
+                tabla_frame, ("ID", "Usuario", "Tipo", "Fecha", "Inicio", "Fin"),
+                (60, 170, 110, 110, 80, 80)
+            )
+            self.tree_disponibilidad.bind("<<TreeviewSelect>>", self.cargar_disponibilidad_seleccionada)
+    
+            reporte_frame = ctk.CTkFrame(panel_izq)
+            reporte_frame.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
+            ctk.CTkLabel(reporte_frame, text="✅ Usuarios libres sin choques de agenda (vista_usuarios_libres)",
+                         font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=15, pady=(10, 0))
+            self.tree_usuarios_libres = self.crear_treeview(
+                reporte_frame, ("Usuario", "Fecha", "Inicio", "Fin"),
+                (200, 110, 90, 90)
+            )
+    
+            form = ctk.CTkScrollableFrame(cuerpo, width=300)
+            form.grid(row=0, column=1, sticky="nsew")
+    
+            ctk.CTkLabel(form, text="Formulario de disponibilidad", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 15))
+    
+            ctk.CTkLabel(form, text="Usuario").pack(anchor="w", padx=10, pady=(2, 2))
+            self.combo_disp_usuario = ctk.CTkComboBox(form, values=["Seleccione un usuario"], state="readonly")
+            self.combo_disp_usuario.set("Seleccione un usuario")
+            self.combo_disp_usuario.pack(fill="x", padx=10, pady=4)
+    
+            ctk.CTkLabel(form, text="Tipo").pack(anchor="w", padx=10, pady=(8, 2))
+            self.combo_disp_tipo = ctk.CTkComboBox(form, values=["disponible", "ocupado", "no disponible"], state="readonly")
+            self.combo_disp_tipo.set("disponible")
+            self.combo_disp_tipo.pack(fill="x", padx=10, pady=4)
+    
+            ctk.CTkLabel(form, text="Fecha").pack(anchor="w", padx=10, pady=(8, 2))
+            self.fecha_disponibilidad = self.crear_selector_fecha(form)
+            self.fecha_disponibilidad.pack(fill="x", padx=10, pady=4)
+    
+            ctk.CTkLabel(form, text="Hora inicio (HH:MM)").pack(anchor="w", padx=10, pady=(8, 2))
+            self.entry_disp_hora_inicio = ctk.CTkEntry(form, placeholder_text="09:00")
+            self.entry_disp_hora_inicio.pack(fill="x", padx=10, pady=4)
+    
+            ctk.CTkLabel(form, text="Hora fin (HH:MM)").pack(anchor="w", padx=10, pady=(8, 2))
+            self.entry_disp_hora_fin = ctk.CTkEntry(form, placeholder_text="11:00")
+            self.entry_disp_hora_fin.pack(fill="x", padx=10, pady=4)
+    
+            ctk.CTkButton(form, text="➕ Registrar franja", command=self.agregar_disponibilidad).pack(fill="x", padx=10, pady=(15, 5))
+            ctk.CTkButton(form, text="🧹 Nueva / Limpiar", command=self.limpiar_form_disponibilidad, fg_color="gray").pack(fill="x", padx=10, pady=5)
+            ctk.CTkButton(form, text="🗑️ Eliminar seleccionada", command=self.eliminar_disponibilidad, fg_color="#b33939", hover_color="#8f2d2d").pack(fill="x", padx=10, pady=5)
+    
+            self.limpiar_form_disponibilidad()
+
+    def disponibilidad_seleccionada_id(self):
+            sel = self.tree_disponibilidad.selection()
+            return self.tree_disponibilidad.item(sel[0])["values"][0] if sel else None
 
     # -------------------- REFRESCO GENERAL --------------------
 
