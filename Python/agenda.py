@@ -1302,6 +1302,50 @@ class AppAgenda(ctk.CTk):
             self.cargar_datos_tareas(); messagebox.showinfo("Éxito", "Tarea actualizada.")
         except Exception as e:
             messagebox.showerror("No se pudo actualizar", str(e))
+
+    def eliminar_tarea(self):
+        tid = self.tarea_seleccionada_id()
+        if tid is None: return messagebox.showwarning("Selección requerida", "Selecciona una tarea.")
+        if not messagebox.askyesno("Confirmar", "¿Eliminar la tarea seleccionada?"): return
+        try:
+            self.ejecutar_consulta("DELETE FROM tareas WHERE id_tarea=%s", (tid,))
+            self.limpiar_form_tarea(); self.cargar_datos_tareas()
+            messagebox.showinfo("Eliminado", "Tarea eliminada.")
+        except Exception as e:
+            messagebox.showerror("No se pudo eliminar", str(e))
+
+    def cargar_datos_tareas(self):
+        try:
+            rows = self.ejecutar_consulta("""
+                SELECT t.id_tarea, e.titulo, u.nombre, u.apellido, t.titulo,
+                       t.prioridad, t.estado, t.fecha_limite
+                FROM tareas t
+                JOIN eventos e ON e.id_evento = t.id_evento
+                JOIN usuarios u ON u.id_usuario = t.id_usuario_responsable
+                ORDER BY t.fecha_limite NULLS LAST, t.id_tarea DESC
+            """, fetch=True)
+            for item in self.tree_tareas.get_children(): self.tree_tareas.delete(item)
+            for row in rows:
+                responsable = f"{row[2]} {row[3]}"
+                limite = row[7].strftime("%Y-%m-%d %H:%M") if hasattr(row[7], "strftime") else "—"
+                self.tree_tareas.insert("", "end", values=(row[0], row[1], responsable, row[4], row[5] or "—", row[6], limite))
+
+            productividad = self.ejecutar_consulta("""
+                SELECT nombre, apellido, tareas_activas, tareas_vencidas
+                FROM vista_reporte_productividad
+            """, fetch=True)
+            for item in self.tree_productividad.get_children(): self.tree_productividad.delete(item)
+            for row in productividad:
+                usuario = f"{row[0]} {row[1]}"
+                self.tree_productividad.insert("", "end", values=(usuario, row[2], row[3]))
+
+            valores_ev = ["Seleccione un evento"] + list(self.eventos_combo.keys())
+            valores_u = ["Seleccione un usuario"] + list(self.usuarios_combo.keys())
+            self.combo_tarea_evento.configure(values=valores_ev)
+            self.combo_tarea_responsable.configure(values=valores_u)
+        except Exception as e:
+            print(f"Error cargando tareas: {e}")
+
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
