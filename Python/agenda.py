@@ -902,7 +902,98 @@ class AppAgenda(ctk.CTk):
         except Exception as e:
             print(f"Error cargando disponibilidad: {e}")
 
+    # GUI para el modulo 3 de series de eventos 
+
+    def configurar_pestana_series(self):
+        self.crear_encabezado(self.tab_series, "Series de Eventos",
+                                   "Define un patrón de repetición y genera automáticamente cada ocurrencia como evento.")
     
+        cuerpo = ctk.CTkFrame(self.tab_series, fg_color="transparent")
+        cuerpo.pack(fill="both", expand=True, padx=10, pady=5)
+        cuerpo.grid_columnconfigure(0, weight=3); cuerpo.grid_columnconfigure(1, weight=1); cuerpo.grid_rowconfigure(0, weight=1)
+    
+        panel_izq = ctk.CTkFrame(cuerpo, fg_color="transparent")
+        panel_izq.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+        panel_izq.grid_rowconfigure(0, weight=1)
+        panel_izq.grid_rowconfigure(1, weight=1)
+        panel_izq.grid_columnconfigure(0, weight=1)
+    
+        tabla_frame = ctk.CTkFrame(panel_izq)
+        tabla_frame.grid(row=0, column=0, sticky="nsew")
+        ctk.CTkLabel(tabla_frame, text="Series creadas", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=15, pady=(10, 0))
+        self.tree_series = self.crear_treeview(
+            tabla_frame, ("ID Serie", "Patrón", "Intervalo (días)", "Inicio", "Fin"),
+            (80, 110, 120, 100, 100)
+        )
+        self.tree_series.bind("<<TreeviewSelect>>", lambda _=None: self.cargar_ocurrencias_de_serie())
+    
+        reporte_frame = ctk.CTkFrame(panel_izq)
+        reporte_frame.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
+        ctk.CTkLabel(reporte_frame, text="🗓️ Ocurrencias de la serie seleccionada (vista_ocurrencias_series)",
+                        font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=15, pady=(10, 0))
+        self.tree_ocurrencias = self.crear_treeview(
+            reporte_frame, ("ID Evento", "Título", "Inicio", "Fin"),
+            (80, 180, 140, 140)
+        )
+    
+        form = ctk.CTkScrollableFrame(cuerpo, width=320)
+        form.grid(row=0, column=1, sticky="nsew")
+    
+        ctk.CTkLabel(form, text="Nueva serie recurrente", font=ctk.CTkFont(size=16, weight="bold")).pack(pady=(10, 15))
+    
+        self.entry_serie_titulo = ctk.CTkEntry(form, placeholder_text="Título base del evento")
+        self.entry_serie_titulo.pack(fill="x", padx=10, pady=6)
+    
+        ctk.CTkLabel(form, text="Propietario").pack(anchor="w", padx=10, pady=(6, 2))
+        self.combo_serie_usuario = ctk.CTkComboBox(form, values=["Seleccione un usuario"], state="readonly")
+        self.combo_serie_usuario.set("Seleccione un usuario")
+        self.combo_serie_usuario.pack(fill="x", padx=10, pady=4)
+    
+         ctk.CTkLabel(form, text="Categoría").pack(anchor="w", padx=10, pady=(6, 2))
+        self.combo_serie_categoria = ctk.CTkComboBox(form, values=["Seleccione una categoría"], state="readonly")
+        self.combo_serie_categoria.set("Seleccione una categoría")
+        self.combo_serie_categoria.pack(fill="x", padx=10, pady=4)
+    
+        ctk.CTkLabel(form, text="Ubicación").pack(anchor="w", padx=10, pady=(6, 2))
+        self.combo_serie_ubicacion = ctk.CTkComboBox(form, values=["Seleccione una ubicación"], state="readonly")
+        self.combo_serie_ubicacion.set("Seleccione una ubicación")
+        self.combo_serie_ubicacion.pack(fill="x", padx=10, pady=4)
+    
+        ctk.CTkLabel(form, text="Patrón de repetición").pack(anchor="w", padx=10, pady=(6, 2))
+        self.combo_serie_patron = ctk.CTkComboBox(
+            form, values=["diario", "semanal", "mensual", "personalizado"],
+            state="readonly", command=self._al_cambiar_patron_serie
+        )
+        self.combo_serie_patron.set("semanal")
+        self.combo_serie_patron.pack(fill="x", padx=10, pady=4)
+    
+        self.label_serie_intervalo = ctk.CTkLabel(form, text="Intervalo en días (solo 'personalizado')")
+        self.label_serie_intervalo.pack(anchor="w", padx=10, pady=(6, 2))
+        self.entry_serie_intervalo = ctk.CTkEntry(form, placeholder_text="Ej. 3")
+        self.entry_serie_intervalo.pack(fill="x", padx=10, pady=4)
+    
+        ctk.CTkLabel(form, text="Fecha inicio de la serie").pack(anchor="w", padx=10, pady=(8, 2))
+        self.fecha_serie_inicio = self.crear_selector_fecha(form)
+        self.fecha_serie_inicio.pack(fill="x", padx=10, pady=4)
+    
+        ctk.CTkLabel(form, text="Fecha fin de la serie").pack(anchor="w", padx=10, pady=(8, 2))
+        self.fecha_serie_fin = self.crear_selector_fecha(form)
+        self.fecha_serie_fin.pack(fill="x", padx=10, pady=4)
+    
+        fila_horas = ctk.CTkFrame(form, fg_color="transparent"); fila_horas.pack(fill="x", padx=10, pady=(8, 4))
+        col1 = ctk.CTkFrame(fila_horas, fg_color="transparent"); col1.pack(side="left", fill="x", expand=True)
+        col2 = ctk.CTkFrame(fila_horas, fg_color="transparent"); col2.pack(side="left", fill="x", expand=True, padx=(6, 0))
+        ctk.CTkLabel(col1, text="Hora inicio").pack(anchor="w")
+        self.entry_serie_hora_inicio = ctk.CTkEntry(col1, placeholder_text="09:00")
+        self.entry_serie_hora_inicio.pack(fill="x")
+        ctk.CTkLabel(col2, text="Hora fin").pack(anchor="w")
+        self.entry_serie_hora_fin = ctk.CTkEntry(col2, placeholder_text="10:00")
+        self.entry_serie_hora_fin.pack(fill="x")
+    
+        ctk.CTkButton(form, text="🔁 Generar serie y ocurrencias", command=self.generar_serie).pack(fill="x", padx=10, pady=(16, 5))
+        ctk.CTkButton(form, text="🧹 Limpiar formulario", command=self.limpiar_form_serie, fg_color="gray").pack(fill="x", padx=10, pady=5)
+    
+        self.limpiar_form_serie()
 
     
 
