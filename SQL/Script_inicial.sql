@@ -111,13 +111,13 @@ create table ubicaciones (
     id_ubicacion serial primary key,
     nombre varchar(100) not null,
     dirección varchar(150) not null,
-    cuidad varchar(30) not null,
+    ciudad varchar(30) not null,
     capacidad int not null check (capacidad > 0)
 ); 
 
 -- relación entre EVENTOS y UBICACIONES
 alter table eventos 
-    add column id_ubicacion int not null references ubicaciones(id_ubiacion); 
+    add column id_ubicacion int not null references ubicaciones(id_ubicacion); 
 
 -- índices para consultar por las ubicaciones y las fechas 
 create index idx_eventos_ubicacion on eventos (id_ubicacion);
@@ -146,3 +146,16 @@ from ubicaciones u
 join eventos e on e.id_ubicacion = u.id_ubicacion
 order by u.id_ubicacion, e.fecha_inicio;
 
+-- demanda de espacios 
+create view vista_ranking_ocupacion_ubicaciones as
+select 
+    u.id_ubicacion,
+    u.nombre as ubicacion,
+    u.ciudad,
+    u.capacidad,
+    count(e.id_evento) as total_eventos,
+    coalesce(sum(extract(epoch from (e.fecha_fin - e.fecha_inicio)) /60), 0) as minutos_totales_reservados
+from ubicaciones u
+left join eventos e on e.id_ubicacion = u.id_ubicacion
+group by u.id_ubicacion, u.nombre, u.ciudad, u.capacidad
+order by total_eventos desc, minutos_totales_resevados desc; 
