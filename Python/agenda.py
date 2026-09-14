@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import customtkinter as ctk
 import psycopg2
@@ -1037,6 +1037,73 @@ class AppAgenda(ctk.CTk):
             else:
                 break
         return fechas    
+
+    def generar_serie(self):
+        titulo = self.entry_serie_titulo.get().strip()
+        usuario = self.usuarios_combo.get(self.combo_serie_usuario.get())
+        categoria = self.categorias_combo.get(self.combo_serie_categoria.get())
+        ubicacion = self.ubicaciones_combo.get(self.combo_serie_ubicacion.get())
+        patron = self.combo_serie_patron.get()
+        hora_inicio_txt = self.entry_serie_hora_inicio.get().strip()
+        hora_fin_txt = self.entry_serie_hora_fin.get().strip()
+
+        if not titulo or usuario is None or categoria is None or ubicacion is None:
+            return messagebox.showwarning("Campos incompletos", "Completa título, propietario, categoría y ubicación.")
+
+        intervalo = None
+        if patron == "personalizado":
+            try:
+                intervalo = int(self.entry_serie_intervalo.get().strip())
+                if intervalo <= 0:
+                    raise ValueError
+            except ValueError:
+                return messagebox.showwarning("Intervalo inválido", "Indica un número entero de días mayor a cero.")
+
+        try:
+            hora_inicio = datetime.strptime(hora_inicio_txt, "%H:%M").time()
+            hora_fin = datetime.strptime(hora_fin_txt, "%H:%M").time()
+        except ValueError:
+            return messagebox.showwarning("Formato inválido", "Las horas deben tener formato HH:MM.")
+        if hora_fin <= hora_inicio:
+            return messagebox.showwarning("Rango inválido", "La hora de fin debe ser posterior a la de inicio.")
+
+        fecha_inicio = datetime.strptime(self.obtener_fecha(self.fecha_serie_inicio), "%Y-%m-%d").date()
+        fecha_fin = datetime.strptime(self.obtener_fecha(self.fecha_serie_fin), "%Y-%m-%d").date()
+        if fecha_fin <= fecha_inicio:
+            return messagebox.showwarning("Rango inválido", "La fecha fin de la serie debe ser posterior a la fecha de inicio.")
+
+        try:
+            serie_id_row = self.ejecutar_consulta("""
+                INSERT INTO series_eventos (patron, intervalo, fecha_inicio, fecha_fin)
+                VALUES (%s, %s, %s, %s) RETURNING id_serie
+            """, (patron, intervalo, fecha_inicio, fecha_fin), fetch=True)
+            id_serie = serie_id_row[0][0]
+        except Exception as e:
+            return messagebox.showerror("No se pudo crear la serie", str(e))
+
+        fechas = self._generar_fechas_serie(patron, intervalo, fecha_inicio, fecha_fin)
+        exitosos, fallidos = 0, 0
+        for fecha in fechas:
+            inicio_dt = datetime.combine(fecha, hora_inicio)
+            fin_dt = datetime.combine(fecha, hora_fin)
+            try:
+                self.ejecutar_consulta("""
+                    INSERT INTO eventos
+                    (id_usuario_propietario, id_categoria, id_ubicacion, titulo, fecha_inicio, fecha_fin, id_serie)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (usuario, categoria, ubicacion, titulo, inicio_dt, fin_dt, id_serie))
+                exitosos += 1
+            except Exception:
+                fallidos += 1
+
+        self.limpiar_form_serie()
+        self.cargar_datos_series()
+        self.cargar_datos_eventos()
+        messagebox.showinfo(
+            "Serie generada",
+            f"Se crearon {exitosos} ocurrencia(s) correctamente.\n"
+            + (f"{fallidos} ocurrencia(s) no se pudieron crear (probable traslape de ubicación)." if fallidos else "")
+        )
 
     
 
