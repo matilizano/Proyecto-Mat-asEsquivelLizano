@@ -1275,6 +1275,33 @@ class AppAgenda(ctk.CTk):
             except ValueError:
                 raise ValueError("La hora límite debe tener formato HH:MM.")
         return evento, responsable, titulo, descripcion, prioridad, estado, fecha_limite
+
+
+    def agregar_tarea(self):
+        try:
+            datos = self.datos_tarea_formulario()
+            self.ejecutar_consulta("""
+                INSERT INTO tareas
+                (id_evento, id_usuario_responsable, titulo, descripcion, prioridad, estado, fecha_limite)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, datos)
+            self.limpiar_form_tarea(); self.cargar_datos_tareas()
+            messagebox.showinfo("Éxito", "Tarea creada correctamente.")
+        except Exception as e:
+            messagebox.showerror("No se pudo crear la tarea", str(e))
+    
+    def actualizar_tarea(self):
+        tid = self.tarea_seleccionada_id()
+        if tid is None: return messagebox.showwarning("Selección requerida", "Selecciona una tarea.")
+        try:
+            evento, responsable, titulo, descripcion, prioridad, estado, fecha_limite = self.datos_tarea_formulario()
+            self.ejecutar_consulta("""
+                UPDATE tareas SET id_evento=%s, id_usuario_responsable=%s, titulo=%s,
+                descripcion=%s, prioridad=%s, estado=%s, fecha_limite=%s WHERE id_tarea=%s
+            """, (evento, responsable, titulo, descripcion, prioridad, estado, fecha_limite, tid))
+            self.cargar_datos_tareas(); messagebox.showinfo("Éxito", "Tarea actualizada.")
+        except Exception as e:
+            messagebox.showerror("No se pudo actualizar", str(e))
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
