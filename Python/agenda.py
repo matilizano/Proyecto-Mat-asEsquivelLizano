@@ -815,6 +815,15 @@ class AppAgenda(ctk.CTk):
             sel = self.tree_disponibilidad.selection()
             return self.tree_disponibilidad.item(sel[0])["values"][0] if sel else None
 
+    def cargar_disponibilidad_seleccionada(self, _=None):
+            sel = self.tree_disponibilidad.selection()
+            if not sel: return
+            vals = self.tree_disponibilidad.item(sel[0])["values"]
+            self.combo_disp_usuario.set(vals[1])
+            self.combo_disp_tipo.set(vals[2])
+            self.establecer_fecha(self.fecha_disponibilidad, str(vals[3]))
+            self.entry_disp_hora_inicio.delete(0, tk.END); self.entry_disp_hora_inicio.insert(0, str(vals[4]))
+            self.entry_disp_hora_fin.delete(0, tk.END); self.entry_disp_hora_fin.insert(0, str(vals[5]))
     # -------------------- REFRESCO GENERAL --------------------
 
     def actualizar_todas_las_tablas(self):
