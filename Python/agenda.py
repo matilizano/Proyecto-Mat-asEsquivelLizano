@@ -858,7 +858,16 @@ class AppAgenda(ctk.CTk):
                 messagebox.showerror("No se pudo registrar",
                                       "Verifica que no se traslape con otra franja del mismo usuario.\n\n" + str(e))
 
-
+    def eliminar_disponibilidad(self):
+        did = self.disponibilidad_seleccionada_id()
+        if did is None: return messagebox.showwarning("Selección requerida", "Selecciona una franja.")
+        if not messagebox.askyesno("Confirmar", "¿Eliminar la franja de disponibilidad seleccionada?"): return
+        try:
+            self.ejecutar_consulta("DELETE FROM disponibilidades WHERE id_disponibilidad=%s", (did,))
+            self.limpiar_form_disponibilidad(); self.cargar_datos_disponibilidad()
+            messagebox.showinfo("Eliminado", "Franja eliminada.")
+        except Exception as e:
+            messagebox.showerror("No se pudo eliminar", str(e))
 
 
 
