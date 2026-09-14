@@ -1105,7 +1105,45 @@ class AppAgenda(ctk.CTk):
             + (f"{fallidos} ocurrencia(s) no se pudieron crear (probable traslape de ubicación)." if fallidos else "")
         )
 
-    
+    def cargar_datos_series(self):
+        try:
+            rows = self.ejecutar_consulta(
+                "SELECT id_serie, patron, intervalo, fecha_inicio, fecha_fin FROM series_eventos ORDER BY id_serie DESC",
+                fetch=True
+            )
+            for item in self.tree_series.get_children(): self.tree_series.delete(item)
+            for row in rows:
+                self.tree_series.insert("", "end", values=(row[0], row[1], row[2] if row[2] is not None else "—", row[3], row[4]))
+
+            valores_u = ["Seleccione un usuario"] + list(self.usuarios_combo.keys())
+            valores_c = ["Seleccione una categoría"] + list(self.categorias_combo.keys())
+            valores_ub = ["Seleccione una ubicación"] + list(self.ubicaciones_combo.keys())
+            self.combo_serie_usuario.configure(values=valores_u)
+            self.combo_serie_categoria.configure(values=valores_c)
+            self.combo_serie_ubicacion.configure(values=valores_ub)
+        except Exception as e:
+            print(f"Error cargando series: {e}")
+
+    def cargar_ocurrencias_de_serie(self):
+        sel = self.tree_series.selection()
+        for item in self.tree_ocurrencias.get_children(): self.tree_ocurrencias.delete(item)
+        if not sel:
+            return
+        id_serie = self.tree_series.item(sel[0])["values"][0]
+        try:
+            rows = self.ejecutar_consulta("""
+                SELECT id_evento, titulo, fecha_inicio_ocurrencia, fecha_fin_ocurrencia
+                FROM vista_ocurrencias_series
+                WHERE id_serie = %s
+                ORDER BY fecha_inicio_ocurrencia
+            """, (id_serie,), fetch=True)
+            for row in rows:
+                inicio = row[2].strftime("%Y-%m-%d %H:%M") if hasattr(row[2], "strftime") else row[2]
+                fin = row[3].strftime("%Y-%m-%d %H:%M") if hasattr(row[3], "strftime") else row[3]
+                self.tree_ocurrencias.insert("", "end", values=(row[0], row[1], inicio, fin))
+        except Exception as e:
+            print(f"Error cargando ocurrencias: {e}")
+ 
 
     
 
