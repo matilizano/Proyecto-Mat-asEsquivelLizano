@@ -235,3 +235,20 @@ create table series_eventos (
         check (patron <> 'personalizado' or intervalo is not null)
 );
 
+alter table eventos
+    add column id_serie int references series_eventos(id_serie);
+create index idx_eventos_serie on eventos (id_serie);
+
+create view vista_ocurrencias_series as 
+select 
+    s.id_serie,
+    s.patron,
+    s.fecha_inicio as fecha_inicio_serie,
+    s.fecha_fin as fecha_fin_serie,
+    e.id_evento,
+    e.titulo,
+    e.fecha_inicio as fecha_incio_ocurrencia,
+    e.fecha_fin as fecha_fin_ocurrencia
+from series_eventos s
+join eventos e on e.id_serie = s.id_serie
+order by s.id_serie, e.fecha_inicio;
