@@ -218,6 +218,45 @@ where t.nombre = 'disponible'
                 tsrange (d.fecha + d.hora_inicio, d.fecha + d.hora_fin)
     );
 
+CREATE OR REPLACE FUNCTION usuarios_libres_en_rango(
+    p_fecha DATE,
+    p_hora_inicio TIME,
+    p_hora_fin TIME
+)
+RETURNS TABLE (
+    id_usuario INT,
+    nombre VARCHAR,
+    apellido VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT u.id_usuario, u.nombre, u.apellido
+    FROM usuarios u
+    WHERE EXISTS (
+        SELECT 1
+        FROM disponibilidades d
+        JOIN tipo_disponibilidad t ON t.id_tipo = d.id_tipo
+        WHERE d.id_usuarios = u.id_usuario
+          AND t.nombre = 'disponible'
+          AND d.fecha = p_fecha
+          AND d.hora_inicio <= p_hora_inicio
+          AND d.hora_fin >= p_hora_fin
+    )
+    AND NOT EXISTS (
+        SELECT 1
+        FROM eventos e
+        LEFT JOIN participaciones part ON part.id_evento = e.id_evento
+        WHERE (e.id_usuario_propietario = u.id_usuario OR part.id_invitado = u.id_usuario)
+          AND tsrange(e.fecha_inicio, e.fecha_fin) &&
+              tsrange(p_fecha + p_hora_inicio, p_fecha + p_hora_fin)
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+
 
 -- Módulo de eventos recurrentes 
 
