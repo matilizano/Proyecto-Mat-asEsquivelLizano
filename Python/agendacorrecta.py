@@ -960,6 +960,31 @@ class AppAgenda(ctk.CTk):
         except Exception as e:
             print(f"Error cargando disponibilidad: {e}")
 
+    def buscar_usuarios_libres_en_rango(self):
+        fecha = self.obtener_fecha(self.fecha_rango_disponibilidad)
+        desde = self.entry_rango_hora_desde.get().strip()
+        hasta = self.entry_rango_hora_hasta.get().strip()
+        if not desde or not hasta:
+            return messagebox.showwarning("Campos requeridos", "Indica la hora de inicio y fin del rango a consultar.")
+        try:
+            datetime.strptime(desde, "%H:%M"); datetime.strptime(hasta, "%H:%M")
+        except ValueError:
+            return messagebox.showwarning("Formato inválido", "Las horas deben tener formato HH:MM.")
+        if hasta <= desde:
+            return messagebox.showwarning("Rango inválido", "La hora final debe ser posterior a la inicial.")
+        try:
+            rows = self.ejecutar_consulta(
+                "SELECT id_usuario, nombre, apellido FROM usuarios_libres_en_rango(%s, %s, %s)",
+                (fecha, desde, hasta), fetch=True
+            )
+            for item in self.tree_libres_rango.get_children():
+                self.tree_libres_rango.delete(item)
+            for row in rows:
+                self.tree_libres_rango.insert("", "end", values=row)
+            if not rows:
+                messagebox.showinfo("Sin resultados", "Ningún usuario está libre en ese rango horario exacto.")
+        except Exception as e:
+            messagebox.showerror("Error en la consulta", str(e))
         
 
     # -------------------- SERIES DE EVENTOS (Módulo 3: RF-13, RF-14) --------------------
