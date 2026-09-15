@@ -789,8 +789,9 @@ class AppAgenda(ctk.CTk):
 
         panel_izq = ctk.CTkFrame(cuerpo, fg_color="transparent")
         panel_izq.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
-        panel_izq.grid_rowconfigure(0, weight=1)
+        panel_izq.grid_rowconfigure(0, weight=2)
         panel_izq.grid_rowconfigure(1, weight=1)
+        panel_izq.grid_rowconfigure(2, weight=1)
         panel_izq.grid_columnconfigure(0, weight=1)
 
         tabla_frame = ctk.CTkFrame(panel_izq)
@@ -809,6 +810,31 @@ class AppAgenda(ctk.CTk):
             reporte_frame, ("Usuario", "Fecha", "Inicio", "Fin"),
             (200, 110, 90, 90)
         )
+
+        rango_frame = ctk.CTkFrame(panel_izq)
+        rango_frame.grid(row=2, column=0, sticky="nsew", pady=(10, 0))
+        ctk.CTkLabel(rango_frame, text="🔎 Buscar disponibilidad en un rango específico (usuarios_libres_en_rango)",
+                     font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=15, pady=(10, 5))
+
+        filtro = ctk.CTkFrame(rango_frame, fg_color="transparent")
+        filtro.pack(fill="x", padx=15, pady=(0, 8))
+        ctk.CTkLabel(filtro, text="Fecha").grid(row=0, column=0, padx=(0, 5))
+        self.fecha_rango_disponibilidad = self.crear_selector_fecha(filtro)
+        self.fecha_rango_disponibilidad.grid(row=0, column=1, padx=5)
+        ctk.CTkLabel(filtro, text="Desde").grid(row=0, column=2, padx=(10, 5))
+        self.entry_rango_hora_desde = ctk.CTkEntry(filtro, width=70, placeholder_text="14:00")
+        self.entry_rango_hora_desde.grid(row=0, column=3, padx=5)
+        ctk.CTkLabel(filtro, text="Hasta").grid(row=0, column=4, padx=(10, 5))
+        self.entry_rango_hora_hasta = ctk.CTkEntry(filtro, width=70, placeholder_text="16:00")
+        self.entry_rango_hora_hasta.grid(row=0, column=5, padx=5)
+        ctk.CTkButton(filtro, text="🔍 Buscar", command=self.buscar_usuarios_libres_en_rango).grid(
+            row=0, column=6, padx=(10, 0)
+        )
+
+        self.tree_libres_rango = self.crear_treeview(
+            rango_frame, ("ID", "Nombre", "Apellido"), (60, 160, 160)
+        )
+        self.establecer_fecha(self.fecha_rango_disponibilidad, datetime.now())
 
         form = ctk.CTkScrollableFrame(cuerpo, width=300)
         form.grid(row=0, column=1, sticky="nsew")
@@ -933,6 +959,8 @@ class AppAgenda(ctk.CTk):
             self.combo_disp_usuario.configure(values=valores_u)
         except Exception as e:
             print(f"Error cargando disponibilidad: {e}")
+
+        
 
     # -------------------- SERIES DE EVENTOS (Módulo 3: RF-13, RF-14) --------------------
 
